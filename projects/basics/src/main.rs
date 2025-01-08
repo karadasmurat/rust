@@ -1,13 +1,68 @@
+// use std::collections::Vec;
+
 enum Color {
     Red,
     Green,
     Blue,
+}
+
+// enum with data
+enum Message {
+    Quit,
+    Move(i32, i32), // Tuple-like variant
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+struct Point {
+    x: i32,
+    y: i32,
 }
 struct User {
     active: bool,
     username: String,
     email: String,
     sign_in_count: u64,
+}
+
+struct Rectangle {
+    w: u32,
+    h: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.w * self.h
+    }
+}
+
+// user parameter takes ownership of the value
+fn get_signin_count_move(user: User) {
+    println!(
+        "user: {} sign in count: {}",
+        user.username, user.sign_in_count
+    )
+}
+
+fn get_signin_count_borrow(user: &User) {
+    println!(
+        "user: {} sign in count: {}",
+        user.username, user.sign_in_count
+    )
+}
+
+fn increment_signin_move(mut user: User) -> User {
+    user.sign_in_count += 1;
+
+    // return modified value
+    user
+}
+
+// Mutable Reference
+fn increment_signin_mutref(user: &mut User) {
+    user.sign_in_count += 1;
+
+    // no return
 }
 
 fn add(x: i32, y: i32) -> i32 {
@@ -45,11 +100,27 @@ fn count_down(mut n: i32) {
     println!("LIFTOFF!!!");
 }
 
+//
+fn increment_err(x: i32) {
+    // x += 1; // ERR cannot assign to immutable argument
+    println!("Value of x inside the function: {}", x);
+}
+
 // Declares a mutable parameter x of type i32
 // Increments the value of x within the function
 fn increment(mut x: i32) {
     x += 1;
     println!("Value of x inside the function: {}", x);
+}
+
+fn modify_arg_err(point: Point) {
+    // point.x = 10; // This will cause a compile-time error
+    println!("Point coordinates: ({}, {})", point.x, point.y);
+}
+
+fn modify_arg(mut point: Point) {
+    point.x = 10;
+    println!("Point coordinates: ({}, {})", point.x, point.y);
 }
 
 fn celsius_to_fahrenheit(c: f64) -> f64 {
@@ -90,7 +161,18 @@ fn calculate_length_ref(s: &String) -> usize {
     s.len()
 }
 
-fn main() {
+fn divide(x: f64, y: f64) -> Option<f64> {
+    if y == 0.0 {
+        None // Division by zero is not allowed
+    } else {
+        Some(x / y)
+    }
+}
+
+fn type_basics() {
+    println!("Type Basics");
+    println!("-----------");
+
     let x = 5; // Integer type is inferred
     let y: f64 = 3.14; // Explicitly typed as a 64-bit floating-point number
     let x = 2.0; // f64
@@ -111,18 +193,119 @@ fn main() {
 
     const HOURS_IN_SECONDS: u32 = 60 * 60;
 
-    // We create a tuple by writing a comma-separated list of values inside parentheses.
-    let tup = (500, 6.4, 1);
-
     let scores = [75, 80, 90];
     let first = scores[0];
     println!("First Score: {first}");
 
-    let sum = add(5, 10);
-    println!("The sum is: {}", sum);
+    // mutability
+    let mut x = 0; // x is immutable here
+                   // increment_err(x); // ERR
 
-    pass_fail(50);
-    letter_score(80);
+    increment(x); // This creates a copy of 'x' and passes it to the function (primitive)
+
+    // Remember: To modify the value of x in the main function, you need to pass a reference to x to the increment function:
+    println!("x after the function call: {}", x); // x remains 0
+
+    tuple_basics();
+    string_basics();
+}
+
+fn tuple_basics() {
+    println!("Tuple Basics");
+    println!("------------");
+
+    // Tuples are a simple way to group multiple values together, often of different types.
+    // We create a tuple by writing a comma-separated list of values inside parentheses.
+    let data = (1, "hello", 3.14);
+
+    // Using a tuple to represent a user
+    // A struct can be more readable and maintainable since named fields in a struct provide better self-documentation.
+    let user: (bool, String, String, u64) = (
+        true,
+        String::from("user1"),
+        String::from("user1@example.com"),
+        1,
+    );
+
+    // use pattern matching to destructure a tuple
+    let (x, y, z) = data;
+
+    println!("{}", y); // hello
+
+    // indexing
+    let x = data.0;
+    println!("{}", x); // 1
+
+    // a function that returns a tuple
+    let (p, a) = perimeter_and_area(5.0, 10.0);
+    println!("w: 5.0 h: 10.0 perimeter: {} area: {}", p, a);
+}
+
+fn array_basics() {
+    println!("Array Basics");
+    println!("------------");
+
+    // declare an array and initialize it with five integer values: 30, 70, 45, 85, and 35
+    // The size of the array (5 elements) is inferred by the compiler
+    let scores1 = [30, 70, 45, 85, 35];
+
+    let scores2: [i32; 4] = [70, 80, 90, 50];
+
+    // Access the first element (index 0)
+    let first = scores1[0];
+
+    // get the length of an array using the len() method
+    let len = scores1.len();
+
+    println!("First score: {} Number of Scores: {}", first, len);
+
+    // iterate over the array
+    for s in scores1 {
+        let res = if s < 50 { "Fail" } else { "Pass" };
+        println!("{}: {}", s, res);
+    }
+}
+
+fn vector_basics() {
+    println!("Vector Basics");
+    println!("-------------");
+
+    // Vectors are implemented using generics
+    // we added a type annotation here. Because we aren’t inserting any values into this vector, Rust doesn’t know what kind of elements we intend to store.
+    let v: Vec<i32> = Vec::new();
+
+    // Using vec! macro
+    // Create a vector with initial values - Rust will infer the type
+    let v2 = vec![1, 2, 3];
+
+    // to change its value, we need to make it mutable
+    let mut v3: Vec<i32> = Vec::new();
+
+    // Using the push method to add values to a vector
+    v3.push(50);
+    v3.push(60);
+
+    // Using & and [] gives us a reference to the element at the index value.
+    let first = v3[0];
+    println!("First element: {}", first);
+
+    // What if you try to use an index value outside the range of existing elements? panic!
+    // When the get method is passed an index that is outside the vector, it returns None without panicking. 
+    // let does_not_exist1 = &v[100]; // panic
+    let does_not_exist2 = v.get(100); 
+
+        // Using match to handle the Option<...>
+    match does_not_exist2 {
+        Some(x) => println!("Value at index 100 is: {}", x),
+        None => println!("Index out of bounds."),
+    }
+    
+    
+}
+
+fn conditionals() {
+    println!("Conditionals");
+    println!("------------");
 
     let score = 45;
 
@@ -130,12 +313,87 @@ fn main() {
     let status = if score < 60 { "Fail" } else { "Pass" };
 
     println!("The status is: {status}");
+}
+
+fn struct_basics() {
+    println!("Struct Basics");
+    println!("-------------");
+
+    // Structs
+    let user1 = User {
+        active: true,
+        username: String::from("user123"),
+        email: String::from("someone@example.com"),
+        sign_in_count: 1,
+    };
+
+    println!("{}", user1.email);
+
+    // method
+    let rect = Rectangle { w: 5, h: 10 };
+    println!("Area: {}", rect.area());
+}
+
+fn string_basics() {
+    println!("String Basics");
+    println!("-------------");
+
+    // create a new, empty String
+    let mut s1 = String::new();
+
+    // string literal
+    let s2 = "string 2";
+
+    // String::from and to_string do the same thing
+    let s3 = "string 3".to_string();
+    let s4 = s2.to_string();
+
+    // Using the String::from function to create a String from a string literal
+    let s5 = String::from("string 5");
+
+    println!("{} {} {} {} {}", s1, s2, s3, s4, s5);
+
+    // update a string
+    let mut s6 = String::from("foo");
+    s6.push_str("bar"); // foobar
+    println!("{}", s6)
+}
+
+fn enum_basics() {
+    let c: Color = Color::Green;
+
+    match c {
+        Color::Red => println!("Variant: Color Red"),
+        _ => println!("Some other color"),
+    }
+
+    let msg = Message::Move(10, 5);
+
+    match msg {
+        Message::Move(x, y) => {
+            println!("Moving to x: {}, y: {}", x, y);
+        }
+        _ => {}
+    }
+
+    // Option<T> enum
+    let result1 = divide(10.0, 2.0); // Some(5.0)
+    let result2 = divide(10.0, 0.0); // None
+
+    match result2 {
+        Some(val) => println!("Result: {}", val),
+        None => println!("Cannot divide by zero."),
+    }
+}
+
+fn main() {
+    let sum = add(5, 10);
+    println!("The sum is: {}", sum);
+
+    pass_fail(50);
+    letter_score(80);
 
     count_down(3);
-
-    let mut y = 5;
-    increment(y);
-    println!("Value of y after the function call: {}", y); // 5
 
     let f = celsius_to_fahrenheit(10.0);
     println!("fahrenheit {f}");
@@ -151,15 +409,6 @@ fn main() {
 
     let pi = 3.14159;
     println!("Pi to 3 decimal places: {:.3}", pi);
-
-    // match expression
-    let number = 3;
-
-    match number {
-        1 => println!("One!"),
-        2 | 3 => println!("Two or three!"),
-        _ => println!("Any other number!"),
-    }
 
     // Looping through each element of a collection
     let fruits = ["Apple", "Banana", "Orange", "Mango"];
@@ -183,8 +432,8 @@ fn main() {
 
     // println!("s is no longer valid here: {s}") // ERR value borrowed after move
 
-    let myval = 5; // x comes into scope
-    makes_copy(x); // i32 is Copy, so it's okay to still use x afterward
+    let myval = 5; // myval comes into scope
+    makes_copy(myval); // i32 is Copy, so it's okay to still use x afterward
     println!("it's okay to still use myval afterward: {myval}");
 
     let s1 = String::from("hello");
@@ -217,20 +466,17 @@ fn main() {
 
     count_down(3);
 
-    let c = Color::Green;
-    print_color(c);
-
-    // Structs
-    let user1 = User {
-        active: true,
-        username: String::from("user123"),
-        email: String::from("someone@example.com"),
-        sign_in_count: 1,
-    };
-
-    println!("{}", user1.email);
-
-    tuple_basics();
+    // type_basics();
+    // string_basics();
+    // tuple_basics();
+    // array_basics();
+    vector_basics();
+    // enum_basics();
+    // conditionals();
+    // loop_basics();
+    // ownership_basics();
+    // match_basics();
+    // struct_basics();
 }
 
 fn print_color(c: Color) {
@@ -241,19 +487,99 @@ fn print_color(c: Color) {
     }
 }
 
-fn tuple_basics() {
-    println!("Tuple Basics");
-    println!("------------");
+fn match_basics() {
+    println!("Match Expressions");
+    println!("-----------------");
 
-    // Tuples are a simple way to group multiple values together, often of different types.
-    let data = (1, "hello", 3.14);
+    let x = 100;
+    let message = match x {
+        // Multiple match patterns may be joined with the | operator
+        0 | 1 => "not many",
+        2..50 => "a few",   // end-exclusive
+        50..=100 => "many", // end-inclusive
+        _ => "lots",
+    };
 
-    // use pattern matching to destructure a tuple
-    let (x, y, z) = data;
+    println!("{x}, {message}"); // 100, many
 
-    println!("{}", y); // hello
+    // match expression
+    let number = 3;
 
-    // indexing
-    let x = data.0;
-    println!("{}", x); // 1
+    match number {
+        1 => println!("One!"),
+        2 | 3 => println!("Two or three!"),
+        _ => println!("Any other number!"),
+    }
+
+    let c = Color::Green;
+    print_color(c);
+}
+
+fn ownership_basics() {
+    println!("Ownership");
+    println!("---------");
+
+    let a = 5; // An integer value 5 is created and assigned to the variable a.
+    let b = a; // The value of a (which is 5) is moved to b.
+
+    println!("b: {}", b); // b:5
+    println!("a: {}", a); // a:5
+
+    let x = 0;
+    add_and_print(x);
+    println!("after call> x: {}", x);
+
+    // Struct
+    let user1 = User {
+        active: true,
+        username: String::from("user1"),
+        email: String::from("user1@example.com"),
+        sign_in_count: 1,
+    };
+
+    // get_signin_count_move(user1); // note that value moved here.
+    // println!("user1 dropped, not accessible here! {}", user1.username); // ERR
+
+    get_signin_count_borrow(&user1); // borrow
+    println!("user1 accessible here! {}", user1.email);
+
+    // Modify function argument
+    // v1: ownership transfer
+    let user_v2 = increment_signin_move(user1);
+    println!("visits: {}", user_v2.sign_in_count); // visits: 2
+
+    let mut user3 = User {
+        active: true,
+        username: String::from("user3"),
+        email: String::from("user3@example.com"),
+        sign_in_count: 1,
+    };
+    // v2: mutable reference
+    increment_signin_mutref(&mut user3);
+    println!("visits: {}", user3.sign_in_count); // visits: 2
+}
+
+fn add_and_print(mut x: i32) {
+    x += 1;
+    println!("x == {}", x);
+}
+
+// calculate and return perimeter and area of a rectangle together
+fn perimeter_and_area(w: f64, h: f64) -> (f64, f64) {
+    (2.0 * (w + h), w * h)
+}
+
+fn loop_basics() {
+    println!("Loop Basics");
+    println!("-----------");
+
+    // Iterate from 1 to 4 (exclusive of 5)
+    for i in 1..5 {
+        println!("{}", i); // Prints: 1 2 3 4
+    }
+
+    // Iterate from 1 to 5
+    for i in 1..=5 {
+        println!("{}", i); // Prints: 1 2 3 4 5
+    }
 }

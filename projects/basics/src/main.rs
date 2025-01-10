@@ -1,4 +1,8 @@
+mod exercises; // import the module
+
 // use std::collections::Vec;
+use std::any::{Any, TypeId};
+use std::collections::HashMap;
 
 enum Color {
     Red,
@@ -33,6 +37,13 @@ struct Rectangle {
 impl Rectangle {
     fn area(&self) -> u32 {
         self.w * self.h
+    }
+
+    // modify self
+    // &mut self: Borrows the struct mutably
+    fn scale(&mut self, factor: u32) {
+        self.w *= factor;
+        self.h *= factor;
     }
 }
 
@@ -169,6 +180,10 @@ fn divide(x: f64, y: f64) -> Option<f64> {
     }
 }
 
+fn print_type<T>(_: &T) {
+    println!("{:?}", std::any::type_name::<T>());
+}
+
 fn type_basics() {
     println!("Type Basics");
     println!("-----------");
@@ -259,6 +274,13 @@ fn array_basics() {
 
     println!("First score: {} Number of Scores: {}", first, len);
 
+    // Looping through each element of a collection
+    let fruits = ["Apple", "Banana", "Orange", "Mango"];
+
+    for fruit in fruits {
+        println!("{fruit}");
+    }
+
     // iterate over the array
     for s in scores1 {
         let res = if s < 50 { "Fail" } else { "Pass" };
@@ -290,17 +312,70 @@ fn vector_basics() {
     println!("First element: {}", first);
 
     // What if you try to use an index value outside the range of existing elements? panic!
-    // When the get method is passed an index that is outside the vector, it returns None without panicking. 
+    // When the get method is passed an index that is outside the vector, it returns None without panicking.
     // let does_not_exist1 = &v[100]; // panic
-    let does_not_exist2 = v.get(100); 
+    let does_not_exist2 = v.get(100);
 
-        // Using match to handle the Option<...>
+    // Using match to handle the Option<...>
     match does_not_exist2 {
         Some(x) => println!("Value at index 100 is: {}", x),
         None => println!("Index out of bounds."),
     }
-    
-    
+
+    //
+    let mut hogwarts = Vec::new();
+
+    let harry = String::from("Harry");
+    let ron = String::from("Ron");
+    let hermione = String::from("Hermione");
+
+    hogwarts.push(harry); // value moved here
+    hogwarts.push(ron);
+    hogwarts.push(hermione);
+
+    // println!("{}", harry); // ERR value barrowed here after move
+
+    println!("{:?}", hogwarts); // ["Harry", "Ron", "Hermione"]
+}
+
+fn hashmap_basics() {
+    println!("Hashmap Basics");
+    println!("-------------");
+
+    // create an empty hash map
+    let mut scores = HashMap::new();
+
+    // insert elements
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 20);
+
+    // the existing value is updated with the new value.
+    scores.insert(String::from("Blue"), 11);
+    println!("{:?}", scores); // {"Blue": 11, "Yellow": 20}
+
+    // insert a key only if it doesn't already exist
+    scores.entry(String::from("Blue")).or_insert(12);
+    scores.entry(String::from("Red")).or_insert(30);
+
+    println!("{:?}", scores); // {"Yellow": 20, "Red": 30, "Blue": 11}
+
+    // access elements
+    // get method returns an Option<&V>; if there’s no value for that key in the hash map, get will return None.
+    let score_blue = scores.get(&String::from("Blue")).copied().unwrap_or(0);
+    println!("{}", score_blue);
+
+    // iterate over keys
+    // &scores provides an immutable borrow of the HashMap, allowing you to iterate without modifying it.
+    for key in scores.keys() {
+        println!("key: {}", key);
+    }
+
+    // Iterate over HashMap
+    // Using &scores in the for loop creates an iterator over the HashMap
+    // Borrowing: After the loop, the scores variable would no longer be valid
+    for (k, v) in &scores {
+        println!("key: {}, value: {}", k, v);
+    }
 }
 
 fn conditionals() {
@@ -329,9 +404,19 @@ fn struct_basics() {
 
     println!("{}", user1.email);
 
-    // method
     let rect = Rectangle { w: 5, h: 10 };
+
+    // method, borrowed self
+    // method can access the struct's data but cannot modify it.
     println!("Area: {}", rect.area());
+
+    // To use a method with &mut self (which modifies the instance),
+    // the instance itself must be declared as mutable.
+    let mut rect2 = Rectangle { w: 1, h: 2 };
+
+    // method, mutable borrowed self
+    rect2.scale(2);
+    println!("Scaled Area: {}", rect2.area());
 }
 
 fn string_basics() {
@@ -356,10 +441,26 @@ fn string_basics() {
     // update a string
     let mut s6 = String::from("foo");
     s6.push_str("bar"); // foobar
-    println!("{}", s6)
+    println!("{}", s6);
+
+    // String slices
+    let s = String::from("hello world");
+    let hello = &s[0..5];
+    let world = &s[6..11];
+
+    let s1 = String::from("hello");
+    let (s2, len) = calculate_length(s1);
+    println!("The length of '{s2}' is {len}.");
+
+    let s3 = String::from("hello");
+    let len3 = calculate_length_ref(&s3);
+    println!("The length of '{s3}' is {len3}.");
 }
 
 fn enum_basics() {
+    println!("Enum Basics");
+    println!("-----------");
+
     let c: Color = Color::Green;
 
     match c {
@@ -384,6 +485,43 @@ fn enum_basics() {
         Some(val) => println!("Result: {}", val),
         None => println!("Cannot divide by zero."),
     }
+
+    //unwrap_or
+    let x: Option<i32> = Some(5);
+    let y: Option<i32> = None;
+
+    println!("x: {}", x.unwrap_or(0)); // Output: x: 5
+    println!("y: {}", y.unwrap_or(10)); // Output: y: 10
+}
+
+fn reference_basics() {
+    println!("Reference Basics");
+    println!("----------------");
+
+    let s = String::from("MK");
+    let s_ref1 = &s;
+    let s_ref2 = &s;
+
+    assert!(s_ref1 == s_ref2);
+
+    let s1 = String::from("hello");
+    let s2 = &s1;
+
+    print_type(&s2);
+}
+
+fn iterator_basics() {
+    println!("Iterator Basics");
+    println!("---------------");
+
+    let values = vec![50, 60, 70];
+
+    // create (mutable) iterator over the elements of the vector values
+    let mut itr1 = values.iter();
+
+    // The next() method on iterators attempts to return the next element in the iteration.
+    // This inherently modifies the state of the iterator.
+    assert_eq!(itr1.next(), Some(&50));
 }
 
 fn main() {
@@ -410,13 +548,6 @@ fn main() {
     let pi = 3.14159;
     println!("Pi to 3 decimal places: {:.3}", pi);
 
-    // Looping through each element of a collection
-    let fruits = ["Apple", "Banana", "Orange", "Mango"];
-
-    for fruit in fruits {
-        println!("{fruit}");
-    }
-
     // clone
     let s1 = String::from("hello");
     let s2 = s1.clone();
@@ -436,14 +567,6 @@ fn main() {
     makes_copy(myval); // i32 is Copy, so it's okay to still use x afterward
     println!("it's okay to still use myval afterward: {myval}");
 
-    let s1 = String::from("hello");
-    let (s2, len) = calculate_length(s1);
-    println!("The length of '{s2}' is {len}.");
-
-    let s3 = String::from("hello");
-    let len3 = calculate_length_ref(&s3);
-    println!("The length of '{s3}' is {len3}.");
-
     //Mutable references
     let mut x = 5;
     let y = &mut x;
@@ -454,29 +577,30 @@ fn main() {
     // // let r3 = &mut s; // PROBLEM
     // // println!("{r1}, {r2}, and {r3}");
 
-    // String slices
-    let s = String::from("hello world");
-    let hello = &s[0..5];
-    let world = &s[6..11];
-
-    // loop
-    for i in (90..100).step_by(3) {
-        println!("{i}");
-    }
-
     count_down(3);
 
     // type_basics();
     // string_basics();
     // tuple_basics();
     // array_basics();
-    vector_basics();
+    // vector_basics();
+    // hashmap_basics();
     // enum_basics();
     // conditionals();
     // loop_basics();
+    // iterator_basics();
     // ownership_basics();
     // match_basics();
-    // struct_basics();
+    struct_basics();
+    // reference_basics();
+
+    // run_exercises();
+}
+
+fn run_exercises() {
+    let s = "Hello, world!";
+    // exercises::strings::letter_frequencies(&s);
+    exercises::shorts::piggybank_2();
 }
 
 fn print_color(c: Color) {

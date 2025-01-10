@@ -1,7 +1,7 @@
 mod exercises; // import the module
 
 // use std::collections::Vec;
-use std::any::{Any, TypeId};
+
 use std::collections::HashMap;
 
 enum Color {
@@ -514,14 +514,46 @@ fn iterator_basics() {
     println!("Iterator Basics");
     println!("---------------");
 
-    let values = vec![50, 60, 70];
+    let values = vec![1, 2, 3];
 
     // create (mutable) iterator over the elements of the vector values
+    // it yields references to the integers within the vector.
     let mut itr1 = values.iter();
 
     // The next() method on iterators attempts to return the next element in the iteration.
     // This inherently modifies the state of the iterator.
-    assert_eq!(itr1.next(), Some(&50));
+    assert_eq!(itr1.next(), Some(&1));
+
+    assert_eq!(itr1.next(), Some(&2));
+    assert_eq!(itr1.next(), Some(&3));
+    assert_eq!(itr1.next(), None);
+
+    // Iterator Adapters
+    let scores = vec![71, 40, 60, 80, 90, 30, 85, 55];
+
+    // map() transforms an existing iterator by applying a function to each element.
+    // creates a new iterator that yields the transformed elements.
+    // double each element
+    let double: Vec<_> = scores.iter().map(|x| x * 2).collect();
+    println!("Doubled scores: {:?}", double);
+
+    // filter
+    // *x: This dereferences the reference &x to get the actual integer value.
+    let passes: Vec<_> = scores.iter().filter(|&x| *x >= 60).cloned().collect();
+    // let passes: Vec<_> = scores.iter().filter(|x| x >= 60).collect();
+
+    println!("{:?}", passes);
+
+    let v1 = vec![1, 2, 3];
+    let v1_iter = v1.iter();
+    // consuming adapter sum
+    let total: i32 = v1_iter.sum(); // 6
+    println!("sum(): {}", total);
+
+    let sum: i32 = passes.iter().sum(); // Explicitly specify the sum type
+    let cnt = passes.len() as f64;
+    let avg = sum as f64 / cnt;
+    println!("{:?}", avg);
 }
 
 fn main() {
@@ -591,16 +623,17 @@ fn main() {
     // iterator_basics();
     // ownership_basics();
     // match_basics();
-    struct_basics();
+    // struct_basics();
     // reference_basics();
 
-    // run_exercises();
+    run_exercises();
 }
 
 fn run_exercises() {
     let s = "Hello, world!";
     // exercises::strings::letter_frequencies(&s);
-    exercises::shorts::piggybank_2();
+    // exercises::shorts::piggybank_2();
+    exercises::shorts::bank_account_demo();
 }
 
 fn print_color(c: Color) {

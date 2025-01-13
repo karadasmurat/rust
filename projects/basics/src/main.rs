@@ -1,4 +1,8 @@
-mod exercises; // import the module
+mod exercises; // declare the module
+
+mod audio; // since no lib.rs, we declare module
+
+// use basics::pass_fail; // import lib function
 
 // use std::collections::Vec;
 
@@ -78,14 +82,6 @@ fn increment_signin_mutref(user: &mut User) {
 
 fn add(x: i32, y: i32) -> i32 {
     x + y
-}
-
-fn pass_fail(score: i32) {
-    if score < 60 {
-        println!("Fail");
-    } else {
-        println!("Pass");
-    }
 }
 
 fn letter_score(score: i32) {
@@ -556,11 +552,18 @@ fn iterator_basics() {
     println!("{:?}", avg);
 }
 
+fn module_basics() {
+    println!("Module Basics");
+    println!("-------------");
+
+    audio::generate_sine_wave();
+    audio::filters::low_pass_filter();
+}
+
 fn main() {
     let sum = add(5, 10);
     println!("The sum is: {}", sum);
 
-    pass_fail(50);
     letter_score(80);
 
     count_down(3);
@@ -611,6 +614,9 @@ fn main() {
 
     count_down(3);
 
+    // use a function defined in lib.rs
+    // let res = pass_fail(40);
+
     // type_basics();
     // string_basics();
     // tuple_basics();
@@ -625,8 +631,9 @@ fn main() {
     // match_basics();
     // struct_basics();
     // reference_basics();
+    module_basics();
 
-    run_exercises();
+    // run_exercises();
 }
 
 fn run_exercises() {

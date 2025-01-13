@@ -1,6 +1,7 @@
+mod audio;
 mod exercises; // declare the module
-
-mod audio; // since no lib.rs, we declare module
+mod geometry; // declare the module // since no lib.rs, we declare module
+use audio::filters::low_pass_filter; // shortcut for the path
 
 // use basics::pass_fail; // import lib function
 
@@ -31,24 +32,6 @@ struct User {
     username: String,
     email: String,
     sign_in_count: u64,
-}
-
-struct Rectangle {
-    w: u32,
-    h: u32,
-}
-
-impl Rectangle {
-    fn area(&self) -> u32 {
-        self.w * self.h
-    }
-
-    // modify self
-    // &mut self: Borrows the struct mutably
-    fn scale(&mut self, factor: u32) {
-        self.w *= factor;
-        self.h *= factor;
-    }
 }
 
 // user parameter takes ownership of the value
@@ -400,7 +383,7 @@ fn struct_basics() {
 
     println!("{}", user1.email);
 
-    let rect = Rectangle { w: 5, h: 10 };
+    let rect = geometry::Rectangle { w: 5, h: 10 };
 
     // method, borrowed self
     // method can access the struct's data but cannot modify it.
@@ -408,7 +391,7 @@ fn struct_basics() {
 
     // To use a method with &mut self (which modifies the instance),
     // the instance itself must be declared as mutable.
-    let mut rect2 = Rectangle { w: 1, h: 2 };
+    let mut rect2 = geometry::Rectangle { w: 1, h: 2 };
 
     // method, mutable borrowed self
     rect2.scale(2);
@@ -557,7 +540,9 @@ fn module_basics() {
     println!("-------------");
 
     audio::generate_sine_wave();
-    audio::filters::low_pass_filter();
+    audio::filters::low_pass_filter(); // Access the function using full path
+                                       // filters::low_pass_filter(); // use audio::filters;
+    low_pass_filter(); // use audio::filters::low_pass_filter;
 }
 
 fn main() {
